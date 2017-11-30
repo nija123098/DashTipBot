@@ -1,15 +1,28 @@
 package com.github.nija123098.tipbot.commands;
 
 import com.github.nija123098.tipbot.AbstractCommand;
+import com.github.nija123098.tipbot.Command;
 import com.github.nija123098.tipbot.Database;
 import com.github.nija123098.tipbot.Main;
+import sx.blah.discord.handle.impl.events.guild.channel.message.reaction.ReactionAddEvent;
+import sx.blah.discord.handle.obj.IChannel;
+import sx.blah.discord.handle.obj.IGuild;
 import sx.blah.discord.handle.obj.IUser;
-import com.github.nija123098.tipbot.utility.TransationLog;
+import com.github.nija123098.tipbot.utility.TransactionLog;
 import com.github.nija123098.tipbot.utility.Unit;
 
-import static com.github.nija123098.tipbot.utility.DatabaseTables.BALANCES_TABLE;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.github.nija123098.tipbot.Database.BALANCES_TABLE;
 
 public class TipCommand extends AbstractCommand {
+    @Override
+    public List<String> getNames() {
+        return Arrays.asList("tip", "give", "gift", "donate", "grant");
+    }
+
     @Override
     public String getHelp() {
         return "Tip a user an amount of Dash which they may withdraw.";
@@ -21,17 +34,16 @@ public class TipCommand extends AbstractCommand {
                 "You may specify a Dash, USD, beer, or other amount.\n" +
                 "Examples:\n" +
                 "    " + Main.PREFIX + "tip " + Main.MAINTAINER.mention() + " a " + Unit.COFFEE.name().toLowerCase() + "\n" +
-                "    " + Main.PREFIX + "tip " + Main.MAINTAINER.mention() + " 1 " + Unit.GBP + "\n" +
-                "    " + Main.PREFIX + "tip " + Main.MAINTAINER.mention() + " 1 " + Unit.$ + "\n" +
+                "    " + Main.PREFIX + "tip " + Main.MAINTAINER.mention() + " 2 " + Unit.GBP + "\n" +
+                "    " + Main.PREFIX + "tip " + Main.MAINTAINER.mention() + " 1 " + Unit.USD + "\n" +
                 "    " + Main.PREFIX + "tip " + Main.MAINTAINER.mention() + " .01 Dash";
     }
 
     @Override
-    public Main.Command getCommand() {
-        return ((invoker, arguments) -> {
+    public Command getCommand() {
+        return ((invoker, arguments, channel) -> {
             BalanceCommand.update(invoker);
             if (arguments.length < 2) return "Please specify a user by mentioning him or her, then a number and unit.";
-            double currentWallet = Double.parseDouble(Database.getValue(BALANCES_TABLE, invoker, "0"));
             IUser recipient = Main.getUserFromMention(arguments[0]);
             if (recipient.equals(invoker)) return "You can't tip yourself.";
             if (recipient.isBot()) return "You can't tip a bot";
@@ -41,11 +53,11 @@ public class TipCommand extends AbstractCommand {
             Unit unit = null;
             int index;
             String lowerName;
-            for (Unit searchingUnit : Unit.values()){
-                lowerName = searchingUnit.name().toLowerCase();
+            for (String unitName : Unit.getNames()){
+                lowerName = unitName.toLowerCase();
                 index = combined.indexOf(lowerName);
                 if (index == -1) continue;
-                unit = searchingUnit;
+                unit = Unit.getUnitForName(unitName);
                 combined = combined.replace(lowerName, "").replace(" ", "");
                 break;
             }
@@ -57,12 +69,37 @@ public class TipCommand extends AbstractCommand {
             } catch (NumberFormatException e){
                 return "Please specify an amount to tip.";
             }
-            double tipAmount = unit.getDashAmount() * amount;
-            if (tipAmount > currentWallet) return "You don't have enough for that.";
-            Database.setValue(BALANCES_TABLE, invoker, String.valueOf(currentWallet - tipAmount));
-            Database.setValue(BALANCES_TABLE, recipient, String.valueOf(Double.valueOf(Database.getValue(BALANCES_TABLE, recipient, "0")) + tipAmount));
-            TransationLog.log("tip of " + tipAmount + " from " + invoker.getStringID() + " to " + recipient.getStringID());
+            String ret = completeTransaction(invoker, recipient, channel.getGuild(), amount, unit);
+            if (ret != null) return ret;
             return Main.OK_HAND;
         });
+    }
+    public static void handleReaction(ReactionAddEvent event) throws IOException {
+        String[] name = event.getReaction().getEmoji().getName().split("_");
+        double amount;
+        try {
+            amount = Double.parseDouble(name[1]);
+        } catch (NumberFormatException ignored){
+            return;
+        }
+        Unit unit = Unit.getUnitForName(name[2]);
+        if (unit == null) return;
+        completeTransaction(event.getAuthor(), event.getMessage().getAuthor(), event.getGuild(), amount, unit);
+    }
+    private static String completeTransaction(IUser invoker, IUser recipient, IGuild guild, double amount, Unit unit) throws IOException {
+        double currentWallet = Double.parseDouble(Database.getValue(BALANCES_TABLE, invoker, "0"));
+        double tipAmount = unit.getDashAmount() * amount;
+        if (tipAmount > currentWallet) return "You don't have enough for that.";
+        Database.setValue(BALANCES_TABLE, invoker, String.valueOf(currentWallet - tipAmount));
+        Database.setValue(BALANCES_TABLE, recipient, String.valueOf(Double.valueOf(Database.getValue(BALANCES_TABLE, recipient, "0")) + tipAmount));
+        TransactionLog.log("tip of " + tipAmount + " from " + invoker.getStringID() + " to " + recipient.getStringID());
+        tipAnnounce(invoker, recipient, guild, amount, unit);
+        return null;
+    }
+    private static void tipAnnounce(IUser invoker, IUser recipient, IGuild guild, double amount, Unit unit){
+        String channel = Database.getValue(Database.ANOUNCEMENT_CHANNEL, guild, "NULL");
+        if (channel.equals("NULL")) return;
+        IChannel dest = guild.getChannelByID(Long.parseLong(channel));
+        if (dest != null) dest.sendMessage(invoker.mention() + " tipped " + recipient.mention() + " " + unit.display(amount));
     }
 }

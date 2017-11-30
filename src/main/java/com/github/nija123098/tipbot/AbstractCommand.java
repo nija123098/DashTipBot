@@ -1,12 +1,15 @@
 package com.github.nija123098.tipbot;
 
+import java.util.Collections;
+import java.util.List;
+
 public abstract class AbstractCommand {
-    public String getName(){
-        return this.getClass().getSimpleName().toLowerCase().replace("command", "");
+    public List<String> getNames(){
+        return Collections.singletonList(this.getClass().getSimpleName().toLowerCase().replace("command", ""));
     }
     public abstract String getHelp();
     public String getFullHelp(){
         return getHelp();
     }
-    public abstract Main.Command getCommand();
+    public abstract Command getCommand();
 }

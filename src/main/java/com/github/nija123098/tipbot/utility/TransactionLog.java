@@ -7,7 +7,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
 
-public class TransationLog {
+public class TransactionLog {
     private static final Path PATH;
     static {
         PATH = Paths.get("Transaction-Log-" + System.currentTimeMillis());

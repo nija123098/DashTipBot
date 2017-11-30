@@ -1,6 +1,7 @@
 package com.github.nija123098.tipbot.commands;
 
 import com.github.nija123098.tipbot.AbstractCommand;
+import com.github.nija123098.tipbot.Command;
 import com.github.nija123098.tipbot.Main;
 
 public class HelpCommand extends AbstractCommand {
@@ -10,8 +11,8 @@ public class HelpCommand extends AbstractCommand {
     }
 
     @Override
-    public Main.Command getCommand() {
-        return (invoker, arguments) -> {
+    public Command getCommand() {
+        return (invoker, arguments, channel) -> {
             if (arguments.length == 0){
                 StringBuilder builder = new StringBuilder();
                 Main.HELP_MAP.forEach((name, help) -> builder.append(name).append(": ").append(help).append("\n"));
