@@ -6,9 +6,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.ResultSetHandler;
 import sx.blah.discord.handle.obj.IDiscordObject;
-import sx.blah.discord.handle.obj.IUser;
 import com.github.nija123098.tipbot.utility.Config;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -20,10 +20,15 @@ public class Database {
     public static final String RECEIVED_TABLE = "received";
     public static final String RECEIVING_ADDRESSES_TABLE = "receiving_addresses";
     public static final String PREFERRED_CURRENCY = "preferred_currency";
-    public static final String ANOUNCEMENT_CHANNEL = "announcement_channel";
+    public static final String ANNOUNCEMENT_CHANNEL = "announcement_channel";
     private static final Connection CONNECTION;
     private static final QueryRunner RUNNER;
     static {
+        try {
+            Config.setUp();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         Connection c;
         try {
             MysqlConnectionPoolDataSource dataSource = new MysqlConnectionPoolDataSource();
@@ -90,10 +95,22 @@ public class Database {
     }
 
     // HELPERS
-    public static void setValue(String table, IDiscordObject user, String value){
+    public static void setValue(String table, IDiscordObject user, String value) throws InterruptedException {
         ensureTableExistence(table);
-        Database.query("DELETE FROM " + table + " WHERE id = " + quote(user.getStringID()));
-        Database.insert("INSERT INTO " + table + " (`id`, `value`) VALUES ('" + user.getStringID() + "','" + value + "');");
+        Database.select("SELECT * FROM " + table + " WHERE id = " + Database.quote(user.getStringID()), set -> {
+            try{set.next();
+                if (set.getString(2).equals(value)) return null;
+                query("UPDATE " + table + " SET value = " + value + " WHERE id = " + user.getStringID());
+            } catch (SQLException e) {
+                Database.insert("INSERT INTO " + table + " (`id`, `value`) VALUES ('" + user.getStringID() + "','" + value + "');");
+            }
+            return null;
+        });
+    }
+
+    public static void resetValue(String table, IDiscordObject object){
+        ensureTableExistence(table);
+        Database.query("DELETE FROM " + table + " WHERE id = " + quote(object.getStringID()));
     }
 
     public static String getValue(String table, IDiscordObject user, String defaul){

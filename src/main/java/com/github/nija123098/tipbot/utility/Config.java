@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Config {
-    public static String DB_USER = "DashTipBot";
-    public static String DB_PASS = "hW3cvwp5DD630jp9";
-    public static String DB_HOST = "127.0.0.1";
-    public static String DB_NAME = "DashTipBotDB";
-    public static String DB_PORT = "3306";
+    public static String DB_USER = "user";
+    public static String DB_PASS = "pass";
+    public static String DB_HOST = "host";
+    public static String DB_NAME = "name";
+    public static String DB_PORT = "port";
     public static String TOKEN;
     public static Boolean setUp() throws IOException {
         Map<String, String> map = Files.readAllLines(Paths.get("config.cfg")).stream().collect(Collectors.toMap((string) -> string.substring(0, string.indexOf("=")), (string) -> string.substring(string.indexOf("=") + 1, string.length())));

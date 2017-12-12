@@ -14,7 +14,7 @@ public class TipAnnouncementsCommand extends AbstractCommand {
     @Override
     public Command getCommand() {
         return (invoker, arguments, channel) -> {
-            Database.setValue(Database.ANOUNCEMENT_CHANNEL, channel.getGuild(), arguments.length > 0 && arguments[0].equalsIgnoreCase("reset") ? "NULL" : channel.getStringID());
+            Database.setValue(Database.ANNOUNCEMENT_CHANNEL, channel.getGuild(), arguments.length > 0 && arguments[0].equalsIgnoreCase("reset") ? "NULL" : channel.getStringID());
             return Main.OK_HAND;
         };
     }

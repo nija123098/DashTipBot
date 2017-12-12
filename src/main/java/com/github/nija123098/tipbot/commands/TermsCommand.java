@@ -11,6 +11,6 @@ public class TermsCommand extends AbstractCommand {
 
     @Override
     public Command getCommand() {
-        return (invoker, arguments, channel) -> "In no event shall the bot be responsible in the event of lost, stolen or misdirected funds.";
+        return (invoker, arguments, channel) -> "In no event shall the bot or any maintainer be responsible in the event of lost, stolen, misdirected, or any exchange of funds.";
     }
 }

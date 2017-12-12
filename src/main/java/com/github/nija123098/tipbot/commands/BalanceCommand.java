@@ -30,7 +30,7 @@ public class BalanceCommand extends AbstractCommand {
         };
     }
 
-    static void update(IUser user) throws IOException {
+    static void update(IUser user) throws IOException, InterruptedException {
         String receivingAddress = Database.getValue(RECEIVING_ADDRESSES_TABLE, user, null);
         if (receivingAddress == null) return;
         Process process = new ProcessBuilder("dash-cli", "getreceivedbyaddress", receivingAddress, "6").start();

@@ -101,9 +101,7 @@ public class Main {
             else RequestBuffer.request(() -> event.getChannel().sendMessage(ret));
         } catch (Exception e){
             if (e instanceof InputException) event.getChannel().sendMessage(e.getMessage());
-            else {
-                issueReport(event, e instanceof WrappingException ? (Exception) e.getCause() : e);
-            }
+            else issueReport(event, e instanceof WrappingException ? (Exception) e.getCause() : e);
         }
         COMMANDS_OCCURRING.decrementAndGet();
     }
@@ -114,14 +112,14 @@ public class Main {
         SCHEDULED_THREAD_EXECUTOR.schedule(() -> {
             if (event.getReaction().getUserReacted(event.getUser())) try {
                 TipCommand.handleReaction(event);
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 issueReport(event, e);
             }
         }, 30, TimeUnit.SECONDS);
     }
 
     public static IUser getUserFromMention(String mention){
-        if (!(mention.startsWith("<@") && mention.endsWith(">"))) throw new InputException("Please mention the user.");
+        if (!(mention.startsWith("<@") && mention.endsWith(">"))) return null;
         mention = mention.replace("!", "");
         try {
             return DISCORD_CLIENT.getUserByID(Long.parseLong(mention.substring(2, mention.length() - 1)));
@@ -133,5 +131,6 @@ public class Main {
     private static void issueReport(MessageEvent event, Exception e){
         RequestBuffer.request(() -> event.getAuthor().getOrCreatePMChannel().sendMessage("Something went wrong while executing your command, I am notifying my maintainer now."));
         RequestBuffer.request(() -> MAINTAINER.getOrCreatePMChannel().sendMessage("You moron, I just caught a " + e.getClass().getSimpleName() + " due to " + e.getMessage()));
+        e.printStackTrace();
     }
 }

@@ -17,7 +17,7 @@ public class HelpCommand extends AbstractCommand {
                 StringBuilder builder = new StringBuilder();
                 Main.HELP_MAP.forEach((name, help) -> builder.append(name).append(": ").append(help).append("\n"));
                 return builder.toString();
-            }else return Main.FULL_HELP_MAP.get(arguments[1].toLowerCase());
+            }else return Main.FULL_HELP_MAP.get(arguments[0].toLowerCase());
         };
     }
 }

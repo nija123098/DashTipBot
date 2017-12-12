@@ -4,3 +4,4 @@
 /modules
 *.cfg
 dependency-reduced-pom.xml
+*.txt
