@@ -86,7 +86,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.github.nija123098.tipbot.Main</mainClass>
+                            <mainClass>com.github.nija123098.tipbot.Launcher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

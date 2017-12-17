@@ -1,8 +1,8 @@
 package com.github.nija123098.tipbot.commands;
 
-import com.github.nija123098.tipbot.AbstractCommand;
-import com.github.nija123098.tipbot.Command;
-import com.github.nija123098.tipbot.Main;
+import com.github.nija123098.tipbot.command.AbstractCommand;
+import com.github.nija123098.tipbot.Bot;
+import com.github.nija123098.tipbot.command.Command;
 
 public class PingCommand extends AbstractCommand {
     @Override
@@ -12,6 +12,6 @@ public class PingCommand extends AbstractCommand {
 
     @Override
     public Command getCommand() {
-        return (invoker, arguments, channel) -> Main.PONG;
+        return (invoker, arguments, channel) -> Bot.PONG;
     }
 }

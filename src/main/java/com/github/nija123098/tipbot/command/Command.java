@@ -1,4 +1,4 @@
-package com.github.nija123098.tipbot;
+package com.github.nija123098.tipbot.command;
 
 import sx.blah.discord.handle.obj.IChannel;
 import sx.blah.discord.handle.obj.IUser;

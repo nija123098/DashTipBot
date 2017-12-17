@@ -1,7 +1,7 @@
 package com.github.nija123098.tipbot.commands;
 
-import com.github.nija123098.tipbot.AbstractCommand;
-import com.github.nija123098.tipbot.Command;
+import com.github.nija123098.tipbot.command.AbstractCommand;
+import com.github.nija123098.tipbot.command.Command;
 
 public class TermsCommand extends AbstractCommand {
     @Override
